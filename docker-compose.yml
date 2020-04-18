@@ -1,0 +1,21 @@
+version: '3'
+services:
+
+  dnsmasq:
+    container_name: dnsmasq_web
+    hostname: dnsmasq
+    image: scjtqs/dnsmasq:latest
+    ports:
+      - 53:53/udp
+      - 9084:8080
+    networks:
+      - dnsmasq_net
+    restart: always
+    volumes:
+      - ./dnsmasq.conf:/etc/dnsmasq.conf
+    environment:
+      - HTTP_USER=admin
+      - HTTP_PASS=123456
+
+networks:
+  dnsmasq_net:
