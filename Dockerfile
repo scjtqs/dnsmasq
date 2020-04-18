@@ -2,9 +2,10 @@ FROM alpine:3.11
 LABEL maintainer="scjtqs@qq.com"
 ENV TIMEZONE            Asia/Shanghai
 # webproc release settings
-RUN echo -e "http://mirrors.aliyun.com/alpine/v3.11/main" > /etc/apk/repositories
-RUN echo -e "\n" >> /etc/apk/repositories
-RUN echo -e "http://mirrors.aliyun.com/alpine/v3.11/community" >> /etc/apk/repositories
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+#RUN echo -e "http://mirrors.aliyun.com/alpine/v3.11/main" > /etc/apk/repositories
+#RUN echo -e "\n" >> /etc/apk/repositories
+#RUN echo -e "http://mirrors.aliyun.com/alpine/v3.11/community" >> /etc/apk/repositories
 # fetch dnsmasq and webproc binary
 WORKDIR /usr/local/bin
 RUN apk update \
