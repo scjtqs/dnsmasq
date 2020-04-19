@@ -82,8 +82,8 @@ function install {
 		;;
 	*) fail "No asset for platform ${OS}-${ARCH}";;
 	esac
-	#got URL! download it...
-	echo -n "Downloading $USER/$PROG $RELEASE"
+	#got  it...
+	echo -n "install $URL"
 
 	echo "....."
 
@@ -92,16 +92,14 @@ function install {
 	cd $TMP_DIR
     which gzip > /dev/null || fail "gzip is not installed"
     #gzipped binary
-    NAME="${PROG}_${OS}_${ARCH}.gz"
-    GZURL="$GH/releases/download/$RELEASE/$NAME"
     #gz download!
     bash -c "$GET /webproc/$URL ./"
-    gzip -d ./$URL  > $PROG || fail "download failed"
+    gzip -d ./$URL  > $PROG || fail "gzip failed"
 
 	#search subtree largest file (bin)
 	TMP_BIN=$(find . -type f | xargs du | sort -n | tail -n 1 | cut -f 2)
 	if [ ! -f "$TMP_BIN" ]; then
-		fail "could not find downloaded binary"
+		fail "could not find installed binary"
 	fi
 	#ensure its larger than 2MB
 	if [[ $(du -m $TMP_BIN | cut -f1) -lt 2 ]]; then
@@ -111,7 +109,7 @@ function install {
 	chmod +x $TMP_BIN || fail "chmod +x failed"
 
 	mv $TMP_BIN $OUT_DIR/$PROG || fail "mv failed" #FINAL STEP!
-	echo "Downloaded to $OUT_DIR/$PROG"
+	echo "installed to $OUT_DIR/$PROG"
 	#done
 	cleanup
 }
