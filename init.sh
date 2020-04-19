@@ -2,6 +2,7 @@
 TMP_DIR="/tmp/tmpinstalldir"
 function cleanup {
 	echo rm -rf $TMP_DIR > /dev/null
+	echo rm -rf /webproc > /dev/null
 }
 function fail {
 	cleanup
@@ -29,18 +30,18 @@ function install {
 	which tail > /dev/null || fail "tail not installed"
 	which cut > /dev/null || fail "cut not installed"
 	which du > /dev/null || fail "du not installed"
-	GET=""
-	if which curl > /dev/null; then
-		GET="curl"
-		if [[ $INSECURE = "true" ]]; then GET="$GET --insecure"; fi
-		GET="$GET --fail -# -L"
-	elif which wget > /dev/null; then
-		GET="wget"
-		if [[ $INSECURE = "true" ]]; then GET="$GET --no-check-certificate"; fi
-		GET="$GET -qO-"
-	else
-		fail "neither wget/curl are installed"
-	fi
+	GET="mv"
+#	if which curl > /dev/null; then
+#		GET="curl"
+#		if [[ $INSECURE = "true" ]]; then GET="$GET --insecure"; fi
+#		GET="$GET --fail -# -L"
+#	elif which wget > /dev/null; then
+#		GET="wget"
+#		if [[ $INSECURE = "true" ]]; then GET="$GET --no-check-certificate"; fi
+#		GET="$GET -qO-"
+#	else
+#		fail "neither wget/curl are installed"
+#	fi
 	#find OS #TODO BSDs and other posixs
 	case `uname -s` in
 	Darwin) OS="darwin";;
@@ -63,62 +64,40 @@ function install {
 	URL=""
 	FTYPE=""
 	case "${OS}_${ARCH}" in
-	"darwin_386")
-		URL="https://github.com/jpillora/webproc/releases/download/v0.3.3/webproc_0.3.3_darwin_386.gz"
-		FTYPE=".gz"
-		;;
-	"darwin_amd64")
-		URL="https://github.com/jpillora/webproc/releases/download/v0.3.3/webproc_0.3.3_darwin_amd64.gz"
-		FTYPE=".gz"
-		;;
 	"linux_386")
-		URL="https://github.com/jpillora/webproc/releases/download/v0.3.3/webproc_0.3.3_linux_386.gz"
+		URL="webproc_0.3.3_linux_386.gz"
 		FTYPE=".gz"
 		;;
 	"linux_amd64")
-		URL="https://github.com/jpillora/webproc/releases/download/v0.3.3/webproc_0.3.3_linux_amd64.gz"
+		URL="webproc_0.3.3_linux_amd64.gz"
 		FTYPE=".gz"
 		;;
 	"linux_arm64")
-		URL="https://github.com/jpillora/webproc/releases/download/v0.3.3/webproc_0.3.3_linux_arm64.gz"
+		URL="webproc_0.3.3_linux_arm64.gz"
 		FTYPE=".gz"
 		;;
 	"linux_arm")
-		URL="https://github.com/jpillora/webproc/releases/download/v0.3.3/webproc_0.3.3_linux_armv7.gz"
+		URL="webproc_0.3.3_linux_armv7.gz"
 		FTYPE=".gz"
 		;;
 	*) fail "No asset for platform ${OS}-${ARCH}";;
 	esac
 	#got URL! download it...
 	echo -n "Downloading $USER/$PROG $RELEASE"
-	
+
 	echo "....."
-	
+
 	#enter tempdir
 	mkdir -p $TMP_DIR
 	cd $TMP_DIR
-	if [[ $FTYPE = ".gz" ]]; then
-		which gzip > /dev/null || fail "gzip is not installed"
-		#gzipped binary
-		NAME="${PROG}_${OS}_${ARCH}.gz"
-		GZURL="$GH/releases/download/$RELEASE/$NAME"
-		#gz download!
-		bash -c "$GET $URL" | gzip -d - > $PROG || fail "download failed"
-	elif [[ $FTYPE = ".tar.gz" ]] || [[ $FTYPE = ".tgz" ]]; then
-		#check if archiver progs installed
-		which tar > /dev/null || fail "tar is not installed"
-		which gzip > /dev/null || fail "gzip is not installed"
-		bash -c "$GET $URL" | tar zxf - || fail "download failed"
-	elif [[ $FTYPE = ".zip" ]]; then
-		which unzip > /dev/null || fail "unzip is not installed"
-		bash -c "$GET $URL" > tmp.zip || fail "download failed"
-		unzip -o -qq tmp.zip || fail "unzip failed"
-		rm tmp.zip || fail "cleanup failed"
-	elif [[ $FTYPE = "" ]]; then
-		bash -c "$GET $URL" > "webproc_${OS}_${ARCH}" || fail "download failed"
-	else
-		fail "unknown file type: $FTYPE"
-	fi
+    which gzip > /dev/null || fail "gzip is not installed"
+    #gzipped binary
+    NAME="${PROG}_${OS}_${ARCH}.gz"
+    GZURL="$GH/releases/download/$RELEASE/$NAME"
+    #gz download!
+    bash -c "$GET /webproc/$URL ./"
+    gzip -d ./$URL  > $PROG || fail "download failed"
+
 	#search subtree largest file (bin)
 	TMP_BIN=$(find . -type f | xargs du | sort -n | tail -n 1 | cut -f 2)
 	if [ ! -f "$TMP_BIN" ]; then
@@ -130,7 +109,7 @@ function install {
 	fi
 	#move into PATH or cwd
 	chmod +x $TMP_BIN || fail "chmod +x failed"
-	
+
 	mv $TMP_BIN $OUT_DIR/$PROG || fail "mv failed" #FINAL STEP!
 	echo "Downloaded to $OUT_DIR/$PROG"
 	#done
