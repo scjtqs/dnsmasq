@@ -6,7 +6,7 @@ services:
     hostname: dnsmasq
     image: scjtqs/dnsmasq:latest
     ports:
-      - 53:53/udp
+      - 192.168.50.50:53:53/udp
       - 9084:8080
     networks:
       - dnsmasq_net
